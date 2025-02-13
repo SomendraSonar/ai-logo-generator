@@ -4,8 +4,8 @@ import Lookup from '@/app/_data/Lookup'
 import LogoDesig from '@/app/_data/LogoDesig'
 import Image from 'next/image'
 
-function LogoDesigns({ onHandelInputChange }) { // Pass as a prop
-  const [selectedOption, setSelectedOption] = useState(null)
+function LogoDesigns({ onHandelInputChange,formData }) { // Pass as a prop
+  const [selectedOption, setSelectedOption] = useState(formData?.design?.title);
 
   return (
     <div className='my-10'>

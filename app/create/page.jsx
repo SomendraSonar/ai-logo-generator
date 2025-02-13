@@ -10,6 +10,7 @@ import LogoDesigns from './_components/LogoDesigns'
 import LogoPalette from './_components/LogoPalette'
 import LogoIdea from './_components/LogoIdea'
 import LogoDesc from "./_components/LogoDesc";  // Adjust path if needed
+import PricingModel from './_components/PricingModel'
 
 
 function CreateLogo() {
@@ -41,8 +42,12 @@ function CreateLogo() {
          <LogoDesigns onHandelInputChange={(v)=>onHandelInputChange('design',v)}
          formData={formData}/>:
          step==5?
-         <LogoIdea onHandelInputChange={(v)=>onHandelInputChange('idea  ',v)}
+         <LogoIdea onHandelInputChange={(v)=>onHandelInputChange('idea',v)}
          formData={formData}/>:
+         step==6?
+         <PricingModel onHandelInputChange={(v)=>onHandelInputChange('pricing',v)}
+         formData={formData}/>:
+
          null
         
     }
