@@ -1,7 +1,8 @@
-
 "use client";
+import dynamic from "next/dynamic";
 import { Suspense } from "react";
-import CreateLogo from "./CreateLogo";
+
+const CreateLogo = dynamic(() => import("./CreateLogo"), { ssr: false });
 
 export default function Page() {
   return (
