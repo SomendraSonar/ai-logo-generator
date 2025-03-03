@@ -9,50 +9,52 @@ function LogoIdea({ formData, onHandelInputChange }) {
   const [ideas, setIdeas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedOption, setSelectedOption] = useState(formData?.idea || "");
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    console.log("Form Data:", formData); // Log formData to verify it's correct
-    generateLogoDesignIdea();
-  }, [formData]); // Add formData as a dependency
-
-  const generateLogoDesignIdea = async () => {
-    try {
-      setLoading(true);
-      const PROMPT = Prompt.DESIGN_IDEA_PROMPT
-        .replace("{logoType}", formData?.design.title)
-        .replace("{logoTitle}", formData.title)
-        .replace("{logoDesc}", formData.desc)
-        .replace("{logoPrompt}", formData.design.prompt);
-
-      console.log("Generated Prompt:", PROMPT); // Log the generated prompt
-
-      const result = await axios.post("/api/ai-design-ideas", {
-        prompt: PROMPT,
-      });
-
-      console.log("API Response:", result.data); // Log the API response
-
-      if (!result.data.ideas || result.data.ideas.length === 0) {
-        console.warn("No ideas found in the API response.");
-      }
-
-      setIdeas(result.data.ideas || []);
-    } catch (error) {
-      console.error("Error fetching design ideas:", error);
-    } finally {
-      setLoading(false);
-    }
+  const hasRequiredData = () => {
+    return formData?.design?.title && formData?.title && formData?.desc && formData?.design?.prompt;
   };
 
   useEffect(() => {
-    console.log("Ideas State:", ideas); // Log the ideas state after update
-  }, [ideas]);
+    const generateIdeas = async () => {
+      try {
+        if (!hasRequiredData()) {
+          setError("Please complete the form to generate ideas");
+          return;
+        }
 
-  useEffect(() => {
-    console.log("Component re-rendered");
-  });
+        setLoading(true);
+        setError("");
 
-  
+        const PROMPT = Prompt.DESIGN_IDEA_PROMPT
+          .replace("{logoType}", formData.design?.title || "")
+          .replace("{logoTitle}", formData.title || "")
+          .replace("{logoDesc}", formData.desc || "")
+          .replace("{logoPrompt}", formData.design?.prompt || "");
+
+        const result = await axios.post("/api/ai-design-ideas", { prompt: PROMPT });
+
+        if (!result.data?.ideas?.length) {
+          setError("No ideas found. Please try again.");
+          return;
+        }
+
+        setIdeas(result.data.ideas);
+      } catch (error) {
+        console.error("Error fetching design ideas:", error);
+        setError("Failed to generate ideas. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    generateIdeas();
+  }, [formData]);
+
+  const handleSelectIdea = (idea) => {
+    setSelectedOption(idea);
+    onHandelInputChange(idea);
+  };
 
   return (
     <div className="my-10">
@@ -60,6 +62,11 @@ function LogoIdea({ formData, onHandelInputChange }) {
         title={Lookup.LogoIdeaTitle}
         description={Lookup.LogoIdeaDesc}
       />
+
+      {error && (
+        <div className="text-red-500 my-4">{error}</div>
+      )}
+
       {loading ? (
         <div className="flex items-center justify-center my-10">
           <Loader2Icon className="animate-spin" />
@@ -68,29 +75,19 @@ function LogoIdea({ formData, onHandelInputChange }) {
         <div className="flex flex-wrap gap-3 mt-6">
           {ideas.map((item, index) => (
             <h2
-              key={index}
-              onClick={() => {
-                setSelectedOption(item);
-                onHandelInputChange(item);
-              }}
-              className={`p-2 rounded-full border px-3 cursor-pointer
-                hover:border-primary ${
-                  selectedOption === item && "border-primary"
-                }`}
+              key={`idea-${index}-${item.substring(0, 5)}`}
+              onClick={() => handleSelectIdea(item)}
+              className={`p-2 rounded-full border px-3 cursor-pointer transition-colors
+                hover:border-primary ${selectedOption === item ? "border-primary bg-primary/10" : ""}`}
             >
               {item}
             </h2>
           ))}
+          
           <h2
-            onClick={() => {
-              setSelectedOption("Let AI Select the best idea");
-              onHandelInputChange("Let AI Select the best idea");
-            }}
-            className={`p-2 rounded-full border px-3 cursor-pointer
-              hover:border-primary ${
-                selectedOption === "Let AI Select the best idea" &&
-                "border-primary"
-              }`}
+            onClick={() => handleSelectIdea("Let AI Select the best idea")}
+            className={`p-2 rounded-full border px-3 cursor-pointer transition-colors
+              ${selectedOption === "Let AI Select the best idea" ? "border-primary bg-primary/10" : "hover:border-primary"}`}
           >
             Let AI Select the best idea
           </h2>
